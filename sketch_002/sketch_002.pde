@@ -21,31 +21,12 @@ void setup(){
   map   = createGraphics(width/2, height/2);
   mapOverlay = loadImage("map.jpg");
   
-  for(int i=0;i<2200*height;i++){
-    color c = mapOverlay.pixels[i];
-    int r = int(red(c) - 128) / 10 + 128;
-    int g = int(green(c) - 128) / 10 + 128;
-    int b = 128;
-    mapOverlay.pixels[i] = color(r,g,b);
-  }
-  
   // 初期化
   map.beginDraw();
   map.background(128);
   map.endDraw();
   
   image(pic, 0, 0, width, height);
-  
-  for(int i=0;i<NOISE_NUM;i++){
-    noiseX[i] = (int)random(0,width);
-    noiseY[i] = (int)random(0,height);
-    
-    int r = (int)random(110,150);
-    int g = (int)random(110,150);
-    
-    noiseC[i] = color(r, g, 128);
-  }
-  
 }
 
 void draw(){
@@ -54,32 +35,15 @@ void draw(){
   map.beginDraw();
 
   map.noStroke();
-  /*
-  for(int i=0;i<NOISE_NUM;i++){    
-    noiseX[i] += noise(time/100+i)*4-2;
-    noiseY[i] += noise(time/100+i)*4-2;
-    
-    if(noiseX[i]<0) noiseX[i] = width;
-    if(noiseX[i]>width) noiseX[i] = 0;
-    
-    if(noiseY[i]<0) noiseY[i] = height;
-    if(noiseY[i]>height) noiseY[i] = 0;
-    
-    map.fill(noiseC[i],40);
-    map.circle(noiseX[i],noiseY[i],200);
-  }
-  */
   
   map.fill(128,17);
   map.rect(-100,-100,width,height);
   
   map.tint(255,100);
-  // map.image(mapOverlay,0,0);
   
   applyGaussianBlur(map, 7);
   map.endDraw();
   
-  // image(map, 0, 0, width, height);
   // image(map,0,0);
   
   prevX = mouseX;
@@ -97,7 +61,7 @@ void mouseDragged(){
     int diffX = (mouseX-prevX)*8;
     int diffY = (mouseY-prevY)*8;
     map.stroke(128+diffX, 128+diffY, 0);
-    map.strokeWeight(20);
+    map.strokeWeight(40);
     map.line(prevX/2, prevY/2, mouseX/2, mouseY/2);
     
     map.endDraw();
@@ -143,63 +107,10 @@ void marvel(){
       pixels[i] = pixels[move];
     }
   }
-  // map.updatePixels();
   map.endDraw();
   updatePixels();
 }
 
-
-
-
-
-
-// 8近傍
-void updatePixelsIfSurrounded(PGraphics graphics){
-  graphics.beginDraw();
-  graphics.loadPixels();  // PGraphicsのピクセルデータをロード
-  
-  PImage img = createImage(graphics.width, graphics.height, RGB);
-  img.set(0, 0, graphics.get());  // PGraphicsの内容をPImageにコピー
-  
-  // ピクセルの変更をPImageに対して行う
-  for (int y = 1; y < img.height - 1; y++) {  // 1行目と最終行を除く
-    for (int x = 1; x < img.width - 1; x++) {  // 1列目と最終列を除く
-      int i = x + y * img.width;  // 現在のピクセルのインデックス
-
-      // 周囲8ピクセルのインデックスを取得
-      int[] surroundingPixels = new int[8];
-      surroundingPixels[0] = (x - 1) + (y - 1) * img.width;  // 左上
-      surroundingPixels[1] = x + (y - 1) * img.width;        // 上
-      surroundingPixels[2] = (x + 1) + (y - 1) * img.width;  // 右上
-      surroundingPixels[3] = (x - 1) + y * img.width;        // 左
-      surroundingPixels[4] = (x + 1) + y * img.width;        // 右
-      surroundingPixels[5] = (x - 1) + (y + 1) * img.width;  // 左下
-      surroundingPixels[6] = x + (y + 1) * img.width;        // 下
-      surroundingPixels[7] = (x + 1) + (y + 1) * img.width;  // 右下
-
-      boolean allSurroundingAreGray = true;
-
-      // 周囲8つのピクセルが(128, 128, 128)かチェック
-      for (int j = 0; j < 8; j++) {
-        color surroundingColor = img.pixels[surroundingPixels[j]];
-        if (red(surroundingColor) == 128 || green(surroundingColor) == 128 || blue(surroundingColor) == 128) {
-          allSurroundingAreGray = false;
-          break;  // 1つでも違う色があればループを抜ける
-        }
-      }
-
-      // すべての周囲のピクセルが(128, 128, 128)なら現在のピクセルも(128, 128, 128)に設定
-      if (allSurroundingAreGray) {
-        img.pixels[i] = color(128, 128, 128);
-      }
-    }
-  }
-
-  img.updatePixels();  // 変更を反映
-  graphics.beginDraw();
-  graphics.image(img, 0, 0);  // 更新されたPImageをPGraphicsに描画
-  graphics.endDraw();
-}
 
 
 
