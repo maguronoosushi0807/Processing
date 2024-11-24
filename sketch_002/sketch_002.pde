@@ -36,15 +36,19 @@ void draw(){
 
   map.noStroke();
   
-  map.fill(128,17);
-  map.rect(-100,-100,width,height);
+  /*
+  if(time%2==0){
+    map.fill(128,64);
+    map.rect(-100,-100,width,height);
+  }
+  */
   
   map.tint(255,100);
   
-  // applyGaussianBlur(map, 7);
+  applyFastBoxBlur(map, 7);
   map.endDraw();
   
-  // image(map,0,0);
+  image(map,0,0);
   
   prevX = mouseX;
   prevY = mouseY;
@@ -82,6 +86,14 @@ void mouseDragged(){
 }
 
 
+void keyPressed(){
+  image(pic,0,0,width,height);
+  map.beginDraw();
+  map.background(128);
+  map.endDraw();
+}
+
+
 
 
 void marvel(){
@@ -92,13 +104,12 @@ void marvel(){
     for(int x=0;x<width;x++){
       int i = x+width*y;
       int j = x/2 + width/2 * y/2;
-      // j = i/2;
       j = constrain(j, 0, width*height/4-1);
       
       color c = map.pixels[j];
       // 移動先を計算
-      int moveX = x + x%2 - ((int)red(c)   - 128)/ 8;
-      int moveY = y + y%2 - ((int)green(c) - 128)/ 8;
+      int moveX = x + x%2 - ((int)red(c)   - 128);
+      int moveY = y + y%2 - ((int)green(c) - 128);
       
       moveX = constrain(moveX,0,width-1);
       moveY = constrain(moveY,0,height-1);
@@ -112,6 +123,78 @@ void marvel(){
 }
 
 
+
+
+
+
+void applyFastBoxBlurAndFade(PGraphics pg, int radius, int steps) {
+  if (radius < 1 || steps < 1) return; // 半径やステップ数が無効なら何もしない
+
+  pg.beginDraw();
+  pg.loadPixels();
+  color[] original = pg.pixels.clone();
+
+  int w = pg.width;
+  int h = pg.height;
+
+  // 一時的な配列を用意（中間データ用）
+  color[] temp = new color[w * h];
+
+  // 水平方向のブラー
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      float r = 0, g = 0, b = 0;
+      int count = 0;
+
+      for (int dx = -radius; dx <= radius; dx++) {
+        int nx = x + dx;
+        if (nx >= 0 && nx < w) { // 範囲チェック
+          color col = original[nx + y * w];
+          r += red(col);
+          g += green(col);
+          b += blue(col);
+          count++;
+        }
+      }
+
+      temp[x + y * w] = color(r / count, g / count, b / count);
+    }
+  }
+
+  // 垂直方向のブラー
+  for (int x = 0; x < w; x++) {
+    for (int y = 0; y < h; y++) {
+      float r = 0, g = 0, b = 0;
+      int count = 0;
+
+      for (int dy = -radius; dy <= radius; dy++) {
+        int ny = y + dy;
+        if (ny >= 0 && ny < h) { // 範囲チェック
+          color col = temp[x + ny * w];
+          r += red(col);
+          g += green(col);
+          b += blue(col);
+          count++;
+        }
+      }
+
+      // 現在のピクセルの色を計算
+      color blurredColor = color(r / count, g / count, b / count);
+      color currentColor = pg.pixels[x + y * w];
+
+      // RGB値を128に近づける
+      float fadeR = lerp(red(currentColor), 128, 1.0 / steps);
+      float fadeG = lerp(green(currentColor), 128, 1.0 / steps);
+      float fadeB = lerp(blue(currentColor), 128, 1.0 / steps);
+
+      // 新しいピクセルの色を設定
+      pg.pixels[x + y * w] = color(fadeR, fadeG, fadeB);
+    }
+  }
+
+  pg.updatePixels();
+  pg.endDraw();
+}
 
 
 
@@ -183,52 +266,61 @@ void applyGaussianBlur(PGraphics img, int radius) {
 
 
 // ボックスブラー関数
-void applyBoxBlur(PGraphics img, int radius) {
-  img.loadPixels();
-  color[] original = img.pixels.clone(); // 元のピクセルを保持
+void applyFastBoxBlur(PGraphics pg, int radius) {
+  if (radius < 1) return; // 半径が0以下なら何もしない
+
+  pg.beginDraw();
+  pg.loadPixels();
+  color[] original = pg.pixels.clone();
   
-  int w = img.width;
-  int h = img.height;
-  
+  int w = pg.width;
+  int h = pg.height;
+
+  // 一時的な配列を用意（処理の中間データ用）
+  color[] temp = new color[w * h];
+
   // 水平方向のブラー
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
       float r = 0, g = 0, b = 0;
       int count = 0;
-      
+
       for (int dx = -radius; dx <= radius; dx++) {
-        int nx = constrain(x + dx, 0, w - 1);
-        color col = original[nx + y * w];
-        r += red(col);
-        g += green(col);
-        b += blue(col);
-        count++;
+        int nx = x + dx;
+        if (nx >= 0 && nx < w) { // 範囲チェック
+          color col = original[nx + y * w];
+          r += red(col);
+          g += green(col);
+          b += blue(col);
+          count++;
+        }
       }
-      img.pixels[x + y * w] = color(r / count, g / count, b / count);
+
+      temp[x + y * w] = color(r / count, g / count, b / count);
     }
   }
-  
-  img.updatePixels();
-  img.loadPixels();
-  original = img.pixels.clone(); // 水平方向後の結果を保持
-  
+
   // 垂直方向のブラー
   for (int x = 0; x < w; x++) {
     for (int y = 0; y < h; y++) {
       float r = 0, g = 0, b = 0;
       int count = 0;
-      
+
       for (int dy = -radius; dy <= radius; dy++) {
-        int ny = constrain(y + dy, 0, h - 1);
-        color col = original[x + ny * w];
-        r += red(col);
-        g += green(col);
-        b += blue(col);
-        count++;
+        int ny = y + dy;
+        if (ny >= 0 && ny < h) { // 範囲チェック
+          color col = temp[x + ny * w];
+          r += red(col);
+          g += green(col);
+          b += blue(col);
+          count++;
+        }
       }
-      img.pixels[x + y * w] = color(r / count, g / count, b / count);
+
+      pg.pixels[x + y * w] = color(r / count, g / count, b / count);
     }
   }
-  
-  img.updatePixels();
+
+  pg.updatePixels();
+  pg.endDraw();
 }
