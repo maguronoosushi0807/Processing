@@ -41,7 +41,7 @@ void draw(){
   
   map.tint(255,100);
   
-  applyGaussianBlur(map, 7);
+  // applyGaussianBlur(map, 7);
   map.endDraw();
   
   // image(map,0,0);
