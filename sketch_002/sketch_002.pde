@@ -36,16 +36,16 @@ void draw(){
 
   map.noStroke();
   
-  /*
-  if(time%2==0){
-    map.fill(128,64);
-    map.rect(-100,-100,width,height);
+  
+  map.fill(128,64);
+  if(time%15==0){
+    map.fill(128,255);
   }
-  */
+  map.rect(-100,-100,width,height);
   
   map.tint(255,100);
   
-  applyFastBoxBlur(map, 7);
+  applyFastBoxBlur(map, 5);
   map.endDraw();
   
   image(map,0,0);
