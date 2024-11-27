@@ -39,7 +39,7 @@ void draw(){
   
   map.fill(128,64);
   if(time%15==0){
-    map.fill(128,255);
+    map.fill(128,200);
   }
   map.rect(-100,-100,width,height);
   
