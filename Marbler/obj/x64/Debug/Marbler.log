@@ -1,0 +1,1 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(992,5): error MSB3191: ディレクトリ "F:\GitHub\Processing\Marbler\obj\x64\Debug\Build\C:\openFrameworks\of_v0.12.0_vs_release\addons\ofxOpenCv\src\Debug" を作成できません。指定されたパスのフォーマットはサポートされていません。
