@@ -39,7 +39,7 @@ void draw(){
     color c = img.get(posX[i], posY[i]);
     
     stroke(bright[i]);
-    stroke(c);
+    // stroke(c);
     bezier(posX[i], posY[i], posX[i+1], posY[i+1], posX[i+2], posY[i+2], posX[i+3], posY[i+3]);
     
     int range = 10;
